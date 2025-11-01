@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Time Interactive - Work/Sleep Highlight</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f4f7; color: #333; text-align: center; padding: 20px; }
+  h1 { margin-bottom: 10px; }
+  .clock-container { display: flex; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+  .clock { background: #fff; border-radius: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); margin: 10px; padding: 20px; width: 200px; }
+  .clock span { display: block; font-size: 1.8em; margin: 10px 0; }
+  .clock small { font-size: 0.9em; color: #666; }
+  .badge { display: inline-block; padding: 4px 8px; border-radius: 5px; font-size: 0.8em; margin-top: 5px; color: #fff; }
+  .work { background-color: #28a745; } /* green */
+  .sleep { background-color: #6c757d; } /* gray */
+  .normal { background-color: #007bff; } /* blue */
+  .slider-container { margin-top: 30px; }
+  input[type=range] { width: 80%; }
+
+  table { width: 90%; margin: 30px auto; border-collapse: collapse; }
+  th, td { padding: 8px; border: 1px solid #ccc; text-align: center; }
+  th { background-color: #007bff; color: white; }
+</style>
+</head>
+<body>
+<h1>🌏 Interactive World Clock with Work/Sleep Highlight</h1>
+<p>Drag the slider to shift Sri Lanka time and see corresponding times in other countries.</p>
+
+<div class="clock-container">
+  <div class="clock">
+    <div>🇱🇰 Sri Lanka</div>
+    <span id="clock-lk">--:-- --</span>
+    <small id="day-lk"></small>
+    <div id="badge-lk" class="badge normal">--</div>
+  </div>
+  <div class="clock">
+    <div>🇨🇦 Toronto</div>
+    <span id="clock-ca">--:-- --</span>
+    <small id="day-ca"></small>
+    <div id="badge-ca" class="badge normal">--</div>
+  </div>
+  <div class="clock">
+    <div>🇴🇲 Oman</div>
+    <span id="clock-om">--:-- --</span>
+    <small id="day-om"></small>
+    <div id="badge-om" class="badge normal">--</div>
+  </div>
+  <div class="clock">
+    <div>🇦🇺 Melbourne</div>
+    <span id="clock-au">--:-- --</span>
+    <small id="day-au"></small>
+    <div id="badge-au" class="badge normal">--</div>
+  </div>
+</div>
+
+<div class="slider-container">
+  <label for="timeSlider">Shift Sri Lanka Time: <span id="sliderTime">0</span> hours</label><br>
+  <input type="range" id="timeSlider" min="-12" max="12" step="0.5" value="0">
+</div>
+
+<h2>📝 Time Ledger</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Country</th>
+      <th>Time</th>
+      <th>Day</th>
+      <th>Status</th>
+      <th>UTC Offset</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🇱🇰 Sri Lanka</td>
+      <td id="ledger-lk">--</td>
+      <td id="ledger-day-lk">--</td>
+      <td id="ledger-status-lk">--</td>
+      <td>UTC+5:30</td>
+    </tr>
+    <tr>
+      <td>🇨🇦 Toronto</td>
+      <td id="ledger-ca">--</td>
+      <td id="ledger-day-ca">--</td>
+      <td id="ledger-status-ca">--</td>
+      <td>UTC-5</td>
+    </tr>
+    <tr>
+      <td>🇴🇲 Oman</td>
+      <td id="ledger-om">--</td>
+      <td id="ledger-day-om">--</td>
+      <td id="ledger-status-om">--</td>
+      <td>UTC+4</td>
+    </tr>
+    <tr>
+      <td>🇦🇺 Melbourne</td>
+      <td id="ledger-au">--</td>
+      <td id="ledger-day-au">--</td>
+      <td id="ledger-status-au">--</td>
+      <td>UTC+11</td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+const offsets = {
+  LK: 5.5,
+  CA: -5,
+  OM: 4,
+  AU: 11
+};
+
+const workStart = 9;  // 9 AM
+const workEnd = 17;   // 5 PM
+const sleepStart = 23; // 11 PM
+const sleepEnd = 8;    // 8 AM
+
+// Slider
+const slider = document.getElementById('timeSlider');
+const sliderTime = document.getElementById('sliderTime');
+
+function formatAMPM(date) {
+  let hours = date.getUTCHours();
+  let minutes = date.getUTCMinutes();
+  let seconds = date.getUTCSeconds();
+  let ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function dayRelation(baseDate, localDate) {
+  const baseDay = baseDate.getUTCDate();
+  const localDay = localDate.getUTCDate();
+  if (localDay > baseDay) return 'Next Day';
+  if (localDay < baseDay) return 'Previous Day';
+  return 'Same Day';
+}
+
+function getStatus(date) {
+  const hour = date.getUTCHours();
+  if (hour >= workStart && hour < workEnd) return 'Work';
+  if (hour >= sleepStart || hour < sleepEnd) return 'Sleep';
+  return 'Normal';
+}
+
+function updateClocks() {
+  const nowUTC = new Date();
+  const shift = parseFloat(slider.value);
+  sliderTime.textContent = shift;
+
+  function updateClock(id, offset) {
+    const local = new Date(nowUTC.getTime() + (offset + shift) * 3600 * 1000);
+    const formatted = formatAMPM(local);
+    const dayText = dayRelation(new Date(nowUTC.getTime() + shift*3600*1000), local);
+    const status = getStatus(local);
+
+    document.getElementById('clock-' + id).textContent = formatted;
+    document.getElementById('day-' + id).textContent = dayText;
+
+    const badge = document.getElementById('badge-' + id);
+    badge.textContent = status;
+    badge.className = `badge ${status.toLowerCase()}`;
+
+    // Ledger update
+    document.getElementById('ledger-' + id).textContent = formatted;
+    document.getElementById('ledger-day-' + id).textContent = dayText;
+    document.getElementById('ledger-status-' + id).textContent = status;
+  }
+
+  updateClock('lk', offsets.LK);
+  updateClock('ca', offsets.CA);
+  updateClock('om', offsets.OM);
+  updateClock('au', offsets.AU);
+}
+
+setInterval(updateClocks, 1000);
+updateClocks();
+slider.addEventListener('input', updateClocks);
+</script>
+</body>
+</html>
