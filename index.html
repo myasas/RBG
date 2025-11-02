@@ -14,30 +14,15 @@
     text-align: center;
   }
   h2 { margin-top: 1rem; }
-  .countries { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
-  .country {
-    border: 1px solid #ccc;
-    border-radius: 1rem;
-    padding: 1rem;
-    width: 220px;
-    background: #fafafa;
-    transition: background 0.3s, color 0.3s;
-  }
-  .country.sleeping {
-    background: #444;
-    color: #eee;
-  }
-  .flag { font-size: 1.5rem; font-weight: bold; }
-  .time { font-size: 1.2rem; margin-top: 0.3rem; }
-  .friend { font-size: 0.9rem; margin-top: 0.25rem; }
-  #sliderContainer { margin: 2rem 0; }
+  #sliderContainer { margin-bottom: 2rem; }
   input[type="range"] { width: 90%; max-width: 500px; }
+  #helper { font-size: 0.9rem; color: #555; margin-top: 0.5rem; margin-bottom: 0.5rem; }
   .availability {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
   }
   .box {
     flex: 1 1 300px;
@@ -59,11 +44,29 @@
     margin-right: auto;
   }
   button:hover { background: #005ec2; }
-  #helper { font-size: 0.9rem; color: #555; margin-top: 0.5rem; }
+  .countries { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+  .country {
+    border: 1px solid #ccc;
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 220px;
+    background: #fafafa;
+    transition: background 0.3s, color 0.3s;
+  }
+  .country.sleeping { background: #444; color: #eee; }
+  .flag { font-size: 1.5rem; font-weight: bold; }
+  .time { font-size: 1.2rem; margin-top: 0.3rem; }
+  .friend { font-size: 0.9rem; margin-top: 0.25rem; }
 </style>
 </head>
 <body>
 <h1>🌏 Friends Timezone Dashboard</h1>
+
+<div id="sliderContainer">
+  <p id="helper">Drag the slider to shift Sri Lanka time and see corresponding times in other countries.</p>
+  <input type="range" id="timeSlider" min="0" max="1439" step="15" />
+  <p id="sliderTime"></p>
+</div>
 
 <div class="availability">
   <div class="box">
@@ -77,12 +80,6 @@
 </div>
 
 <button id="copyButton">📋 Copy Available Friends</button>
-
-<div id="sliderContainer">
-  <p id="helper">Drag the slider to shift Sri Lanka time and see corresponding times in other countries.</p>
-  <input type="range" id="timeSlider" min="0" max="1439" step="15" />
-  <p id="sliderTime"></p>
-</div>
 
 <div id="countries" class="countries"></div>
 
@@ -110,10 +107,10 @@ const countryNames = {
 };
 
 function getEmoji(hour) {
-  if (hour >= 5 && hour < 12) return "🌅"; // Morning
-  if (hour >= 12 && hour < 17) return "🌞"; // Day
-  if (hour >= 17 && hour < 22) return "🌇"; // Evening
-  return "🌙"; // Night
+  if (hour >= 5 && hour < 12) return "🌅";
+  if (hour >= 12 && hour < 17) return "🌞";
+  if (hour >= 17 && hour < 22) return "🌇";
+  return "🌙";
 }
 
 function isSleeping(hour) {
@@ -140,16 +137,11 @@ function render(timeOffsetMinutes = 0) {
       const options = { timeZone: g.tz, hour: "2-digit", minute: "2-digit", hour12: false };
       const formatter = new Intl.DateTimeFormat("en-US", options);
       const formattedTime = formatter.format(now);
-
       const hour24 = parseInt(formattedTime.split(":")[0], 10);
-      const minute = formattedTime.split(":")[1];
       const sleeping = isSleeping(hour24);
       const emoji = getEmoji(hour24);
       const displayTime = new Intl.DateTimeFormat("en-US", {
-        timeZone: g.tz,
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
+        timeZone: g.tz, hour: "2-digit", minute: "2-digit", hour12: true
       }).format(now);
 
       const countryDivId = tz.replace(/[^a-zA-Z]/g, "");
@@ -199,7 +191,7 @@ function setup() {
     alert("Copied!");
   });
   render();
-  setInterval(() => render(parseInt(slider.value)), 300000); // refresh every 5 min
+  setInterval(() => render(parseInt(document.getElementById("timeSlider").value)), 300000);
 }
 
 setup();
