@@ -14,7 +14,7 @@
     text-align: center;
   }
   h2 { margin-top: 1rem; }
-  .countries { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+  .countries { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 2rem; }
   .country {
     border: 1px solid #ccc;
     border-radius: 1rem;
@@ -37,7 +37,7 @@
     flex-wrap: wrap;
     justify-content: space-around;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
   .box {
     flex: 1 1 300px;
@@ -54,18 +54,16 @@
     background: #007aff;
     color: white;
     cursor: pointer;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
   button:hover { background: #005ec2; }
+  #helper { font-size: 0.9rem; color: #555; margin-top: 0.5rem; }
 </style>
 </head>
 <body>
 <h1>🌏 Friends Timezone Dashboard</h1>
-<p>Base time: 🇱🇰 Sri Lanka</p>
-<div id="sliderContainer">
-  <input type="range" id="timeSlider" min="0" max="1439" step="15" />
-  <p id="sliderTime"></p>
-</div>
-<div id="countries" class="countries"></div>
 
 <div class="availability">
   <div class="box">
@@ -79,6 +77,14 @@
 </div>
 
 <button id="copyButton">📋 Copy Available Friends</button>
+
+<div id="sliderContainer">
+  <p id="helper">Drag the slider to shift Sri Lanka time and see corresponding times in other countries.</p>
+  <input type="range" id="timeSlider" min="0" max="1439" step="15" />
+  <p id="sliderTime"></p>
+</div>
+
+<div id="countries" class="countries"></div>
 
 <script>
 const friends = [
