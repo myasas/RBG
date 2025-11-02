@@ -1,182 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Time Interactive - Work/Sleep Highlight</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Friends Timezone Dashboard</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #f0f4f7; color: #333; text-align: center; padding: 20px; }
-  h1 { margin-bottom: 10px; }
-  .clock-container { display: flex; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
-  .clock { background: #fff; border-radius: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); margin: 10px; padding: 20px; width: 200px; }
-  .clock span { display: block; font-size: 1.8em; margin: 10px 0; }
-  .clock small { font-size: 0.9em; color: #666; }
-  .badge { display: inline-block; padding: 4px 8px; border-radius: 5px; font-size: 0.8em; margin-top: 5px; color: #fff; }
-  .work { background-color: #28a745; } /* green */
-  .sleep { background-color: #6c757d; } /* gray */
-  .normal { background-color: #007bff; } /* blue */
-  .slider-container { margin-top: 30px; }
-  input[type=range] { width: 80%; }
-
-  table { width: 90%; margin: 30px auto; border-collapse: collapse; }
-  th, td { padding: 8px; border: 1px solid #ccc; text-align: center; }
-  th { background-color: #007bff; color: white; }
+  body {
+    font-family: system-ui, sans-serif;
+    background: #fff;
+    color: #222;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+  }
+  h2 { margin-top: 1rem; }
+  .countries { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+  .country {
+    border: 1px solid #ccc;
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 220px;
+    background: #fafafa;
+    transition: background 0.3s, color 0.3s;
+  }
+  .country.sleeping {
+    background: #444;
+    color: #eee;
+  }
+  .flag { font-size: 1.5rem; font-weight: bold; }
+  .time { font-size: 1.2rem; margin-top: 0.3rem; }
+  .friend { font-size: 0.9rem; margin-top: 0.25rem; }
+  #sliderContainer { margin: 2rem 0; }
+  input[type="range"] { width: 90%; max-width: 500px; }
+  .availability {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .box {
+    flex: 1 1 300px;
+    border: 1px solid #ccc;
+    border-radius: 0.8rem;
+    padding: 1rem;
+    text-align: left;
+  }
+  button {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: #007aff;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover { background: #005ec2; }
 </style>
 </head>
 <body>
-<h1>🌏 Interactive World Clock with Work/Sleep Highlight</h1>
-<p>Drag the slider to shift Sri Lanka time and see corresponding times in other countries.</p>
+<h1>🌏 Friends Timezone Dashboard</h1>
+<p>Base time: 🇱🇰 Sri Lanka</p>
+<div id="sliderContainer">
+  <input type="range" id="timeSlider" min="0" max="1439" step="15" />
+  <p id="sliderTime"></p>
+</div>
+<div id="countries" class="countries"></div>
 
-<div class="clock-container">
-  <div class="clock">
-    <div>🇱🇰 Sri Lanka</div>
-    <span id="clock-lk">--:-- --</span>
-    <small id="day-lk"></small>
-    <div id="badge-lk" class="badge normal">--</div>
+<div class="availability">
+  <div class="box">
+    <h2>✅ Available (<span id="countAvailable">0</span>)</h2>
+    <div id="availableList"></div>
   </div>
-  <div class="clock">
-    <div>🇨🇦 Toronto</div>
-    <span id="clock-ca">--:-- --</span>
-    <small id="day-ca"></small>
-    <div id="badge-ca" class="badge normal">--</div>
-  </div>
-  <div class="clock">
-    <div>🇴🇲 Oman</div>
-    <span id="clock-om">--:-- --</span>
-    <small id="day-om"></small>
-    <div id="badge-om" class="badge normal">--</div>
-  </div>
-  <div class="clock">
-    <div>🇦🇺 Melbourne</div>
-    <span id="clock-au">--:-- --</span>
-    <small id="day-au"></small>
-    <div id="badge-au" class="badge normal">--</div>
+  <div class="box">
+    <h2>😴 Unavailable (<span id="countUnavailable">0</span>)</h2>
+    <div id="unavailableList"></div>
   </div>
 </div>
 
-<div class="slider-container">
-  <label for="timeSlider">Shift Sri Lanka Time: <span id="sliderTime">0</span> hours</label><br>
-  <input type="range" id="timeSlider" min="-12" max="12" step="0.5" value="0">
-</div>
-
-<h2>📝 Time Ledger</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Country</th>
-      <th>Time</th>
-      <th>Day</th>
-      <th>Status</th>
-      <th>UTC Offset</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>🇱🇰 Sri Lanka</td>
-      <td id="ledger-lk">--</td>
-      <td id="ledger-day-lk">--</td>
-      <td id="ledger-status-lk">--</td>
-      <td>UTC+5:30</td>
-    </tr>
-    <tr>
-      <td>🇨🇦 Toronto</td>
-      <td id="ledger-ca">--</td>
-      <td id="ledger-day-ca">--</td>
-      <td id="ledger-status-ca">--</td>
-      <td>UTC-5</td>
-    </tr>
-    <tr>
-      <td>🇴🇲 Oman</td>
-      <td id="ledger-om">--</td>
-      <td id="ledger-day-om">--</td>
-      <td id="ledger-status-om">--</td>
-      <td>UTC+4</td>
-    </tr>
-    <tr>
-      <td>🇦🇺 Melbourne</td>
-      <td id="ledger-au">--</td>
-      <td id="ledger-day-au">--</td>
-      <td id="ledger-status-au">--</td>
-      <td>UTC+11</td>
-    </tr>
-  </tbody>
-</table>
+<button id="copyButton">📋 Copy Available Friends</button>
 
 <script>
-const offsets = {
-  LK: 5.5,
-  CA: -5,
-  OM: 4,
-  AU: 11
+const friends = [
+  { name: "Kalana", flag: "🇱🇰", tz: "Asia/Colombo" },
+  { name: "Vinula", flag: "🇱🇰", tz: "Asia/Colombo" },
+  { name: "Gamitha", flag: "🇱🇰", tz: "Asia/Colombo" },
+  { name: "Sunanda", flag: "🇨🇦", tz: "America/Toronto" },
+  { name: "Dhananjaya", flag: "🇨🇦", tz: "America/Toronto" },
+  { name: "Ashraq", flag: "🇴🇲", tz: "Asia/Muscat" },
+  { name: "Sahanaka", flag: "🇦🇺", tz: "Australia/Melbourne" },
+  { name: "Yasas", flag: "🇦🇺", tz: "Australia/Melbourne" },
+  { name: "Praneeth", flag: "🇦🇺", tz: "Australia/Perth" },
+  { name: "Dinuka", flag: "🇺🇸", tz: "America/Chicago" }
+];
+
+const countryNames = {
+  "Asia/Colombo": "🇱🇰 Sri Lanka",
+  "America/Toronto": "🇨🇦 Toronto",
+  "Asia/Muscat": "🇴🇲 Oman",
+  "Australia/Melbourne": "🇦🇺 Melbourne",
+  "Australia/Perth": "🇦🇺 Perth",
+  "America/Chicago": "🇺🇸 Houston"
 };
 
-const workStart = 9;  // 9 AM
-const workEnd = 17;   // 5 PM
-const sleepStart = 23; // 11 PM
-const sleepEnd = 8;    // 8 AM
-
-// Slider
-const slider = document.getElementById('timeSlider');
-const sliderTime = document.getElementById('sliderTime');
-
-function formatAMPM(date) {
-  let hours = date.getUTCHours();
-  let minutes = date.getUTCMinutes();
-  let seconds = date.getUTCSeconds();
-  let ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  if (hours === 0) hours = 12;
-  return `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')} ${ampm}`;
+function getEmoji(hour) {
+  if (hour >= 5 && hour < 12) return "🌅"; // Morning
+  if (hour >= 12 && hour < 17) return "🌞"; // Day
+  if (hour >= 17 && hour < 22) return "🌇"; // Evening
+  return "🌙"; // Night
 }
 
-function dayRelation(baseDate, localDate) {
-  const baseDay = baseDate.getUTCDate();
-  const localDay = localDate.getUTCDate();
-  if (localDay > baseDay) return 'Next Day';
-  if (localDay < baseDay) return 'Previous Day';
-  return 'Same Day';
+function isSleeping(hour) {
+  return hour >= 22 || hour < 6;
 }
 
-function getStatus(date) {
-  const hour = date.getUTCHours();
-  if (hour >= workStart && hour < workEnd) return 'Work';
-  if (hour >= sleepStart || hour < sleepEnd) return 'Sleep';
-  return 'Normal';
-}
+function render(timeOffsetMinutes = 0) {
+  const base = new Date();
+  const countriesDiv = document.getElementById("countries");
+  countriesDiv.innerHTML = "";
 
-function updateClocks() {
-  const nowUTC = new Date();
-  const shift = parseFloat(slider.value);
-  sliderTime.textContent = shift;
+  const available = [];
+  const unavailable = [];
 
-  function updateClock(id, offset) {
-    const local = new Date(nowUTC.getTime() + (offset + shift) * 3600 * 1000);
-    const formatted = formatAMPM(local);
-    const dayText = dayRelation(new Date(nowUTC.getTime() + shift*3600*1000), local);
-    const status = getStatus(local);
-
-    document.getElementById('clock-' + id).textContent = formatted;
-    document.getElementById('day-' + id).textContent = dayText;
-
-    const badge = document.getElementById('badge-' + id);
-    badge.textContent = status;
-    badge.className = `badge ${status.toLowerCase()}`;
-
-    // Ledger update
-    document.getElementById('ledger-' + id).textContent = formatted;
-    document.getElementById('ledger-day-' + id).textContent = dayText;
-    document.getElementById('ledger-status-' + id).textContent = status;
+  const grouped = {};
+  for (const f of friends) {
+    if (!grouped[f.tz]) grouped[f.tz] = [];
+    grouped[f.tz].push(f);
   }
 
-  updateClock('lk', offsets.LK);
-  updateClock('ca', offsets.CA);
-  updateClock('om', offsets.OM);
-  updateClock('au', offsets.AU);
+  for (const [tz, group] of Object.entries(grouped)) {
+    for (const g of group) {
+      const now = new Date(base.getTime() + timeOffsetMinutes * 60000);
+      const options = { timeZone: g.tz, hour: "2-digit", minute: "2-digit", hour12: false };
+      const formatter = new Intl.DateTimeFormat("en-US", options);
+      const formattedTime = formatter.format(now);
+
+      const hour24 = parseInt(formattedTime.split(":")[0], 10);
+      const minute = formattedTime.split(":")[1];
+      const sleeping = isSleeping(hour24);
+      const emoji = getEmoji(hour24);
+      const displayTime = new Intl.DateTimeFormat("en-US", {
+        timeZone: g.tz,
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }).format(now);
+
+      const countryDivId = tz.replace(/[^a-zA-Z]/g, "");
+      let countryDiv = document.getElementById(countryDivId);
+      if (!countryDiv) {
+        countryDiv = document.createElement("div");
+        countryDiv.id = countryDivId;
+        countryDiv.className = "country";
+        countriesDiv.appendChild(countryDiv);
+      }
+      countryDiv.className = "country" + (sleeping ? " sleeping" : "");
+      countryDiv.innerHTML = `<div class="flag">${countryNames[tz]}</div>
+                              <div class="time">${displayTime}</div>
+                              <div class="friend">${group.map(f=>f.name).join("<br>")}</div>`;
+
+      const entry = `${g.flag} ${g.name} — ${displayTime} ${emoji}`;
+      if (sleeping) unavailable.push(entry);
+      else available.push(entry);
+    }
+  }
+
+  document.getElementById("availableList").innerHTML = available.join("<br>");
+  document.getElementById("unavailableList").innerHTML = unavailable.join("<br>");
+  document.getElementById("countAvailable").innerText = available.length;
+  document.getElementById("countUnavailable").innerText = unavailable.length;
+
+  const sliderLabel = document.getElementById("sliderTime");
+  const ref = new Date(base.getTime() + timeOffsetMinutes * 60000);
+  const slFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Colombo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
+  sliderLabel.textContent = `🇱🇰 Sri Lanka Time: ${slFormatter.format(ref)}`;
+
+  window.currentData = { available, unavailable };
 }
 
-setInterval(updateClocks, 1000);
-updateClocks();
-slider.addEventListener('input', updateClocks);
+function setup() {
+  const slider = document.getElementById("timeSlider");
+  slider.addEventListener("input", () => render(parseInt(slider.value)));
+  document.getElementById("copyButton").addEventListener("click", () => {
+    const { available, unavailable } = window.currentData;
+    const text = `${available.length} out of ${friends.length} friends are available.\n\nAvailable:\n${available.join("\n")}\n\nUnavailable:\n${unavailable.join("\n")}`;
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+  });
+  render();
+  setInterval(() => render(parseInt(slider.value)), 300000); // refresh every 5 min
+}
+
+setup();
 </script>
 </body>
 </html>
