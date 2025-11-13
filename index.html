@@ -57,6 +57,7 @@
   .flag { font-size: 1.5rem; font-weight: bold; }
   .time { font-size: 1.2rem; margin-top: 0.3rem; }
   .friend { font-size: 0.9rem; margin-top: 0.25rem; }
+  .daydiff { font-size: 0.8rem; color: #888; }
 </style>
 </head>
 <body>
@@ -119,6 +120,9 @@ function isSleeping(hour) {
 
 function render(timeOffsetMinutes = 0) {
   const base = new Date();
+  const slDate = new Date(base.toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
+  const slDay = slDate.getDate();
+
   const countriesDiv = document.getElementById("countries");
   countriesDiv.innerHTML = "";
 
@@ -144,6 +148,13 @@ function render(timeOffsetMinutes = 0) {
         timeZone: g.tz, hour: "2-digit", minute: "2-digit", hour12: true
       }).format(now);
 
+      // Get day difference vs Sri Lanka
+      const localDate = new Date(now.toLocaleString("en-US", { timeZone: g.tz }));
+      const localDay = localDate.getDate();
+      let dayDiff = "";
+      if (localDay > slDay) dayDiff = "+1d";
+      else if (localDay < slDay) dayDiff = "-1d";
+
       const countryDivId = tz.replace(/[^a-zA-Z]/g, "");
       let countryDiv = document.getElementById(countryDivId);
       if (!countryDiv) {
@@ -153,11 +164,11 @@ function render(timeOffsetMinutes = 0) {
         countriesDiv.appendChild(countryDiv);
       }
       countryDiv.className = "country" + (sleeping ? " sleeping" : "");
-      countryDiv.innerHTML = `<div class="flag">${countryNames[tz]}</div>
+      countryDiv.innerHTML = `<div class="flag">${countryNames[tz]} <span class="daydiff">${dayDiff}</span></div>
                               <div class="time">${displayTime}</div>
                               <div class="friend">${group.map(f=>f.name).join("<br>")}</div>`;
 
-      const entry = `${g.flag} ${g.name} — ${displayTime} ${emoji}`;
+      const entry = `${g.flag} ${g.name} — ${displayTime} ${emoji}${dayDiff ? " " + dayDiff : ""}`;
       if (sleeping) unavailable.push(entry);
       else available.push(entry);
     }
